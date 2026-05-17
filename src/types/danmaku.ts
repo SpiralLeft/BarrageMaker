@@ -17,6 +17,8 @@ export interface ProjectData {
   height: number;
   fps: number;
   fontSize: number;
+  fontWeight: number;
+  strokeWidth: number;
   bgColor: string;
   danmakus: DanmakuItem[];
 }

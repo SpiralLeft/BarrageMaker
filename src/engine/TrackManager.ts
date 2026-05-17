@@ -83,14 +83,16 @@ export class TrackManager {
   ): TrackAssignment {
     const th = this.trackHeight();
     const maxTracks = Math.max(1, Math.floor((this.canvasHeight * 0.7) / th));
-    this.getOrCreateTracks(this.scrollTracks, maxTracks, 'scroll', 0);
+    // Pad top so shadow/stroke don't clip above canvas
+    const scrollTopPad = 8;
+    this.getOrCreateTracks(this.scrollTracks, maxTracks, 'scroll', scrollTopPad);
 
     // occupiedUntil = entryTime + textWidth/speed: when tail clears right edge
     const clearEntryTime = item.time + textWidth / speed;
 
     for (const track of this.scrollTracks) {
       // Update Y in case font size / canvas changed
-      track.y = track.id * th;
+      track.y = scrollTopPad + track.id * th;
       if (track.occupiedUntil <= item.time + buffer) {
         track.occupiedUntil = Math.max(track.occupiedUntil, clearEntryTime);
         return { danmakuId: item.id, trackId: track.id, y: track.y, textWidth };
@@ -101,7 +103,7 @@ export class TrackManager {
       a.occupiedUntil < b.occupiedUntil ? a : b,
     );
     earliest.occupiedUntil = Math.max(earliest.occupiedUntil, item.time) + textWidth / speed;
-    earliest.y = earliest.id * th;
+    earliest.y = scrollTopPad + earliest.id * th;
     return { danmakuId: item.id, trackId: earliest.id, y: earliest.y, textWidth };
   }
 
@@ -115,15 +117,15 @@ export class TrackManager {
     const maxTracks = Math.max(1, Math.floor((this.canvasHeight * 0.3) / th));
 
     const tracks = mode === 'top' ? this.topTracks : this.bottomTracks;
-    const startY = mode === 'top' ? 0 : this.canvasHeight - maxTracks * th;
+    // Top: start from top (with pad for shadow/stroke) going down. Bottom: start from bottom going up.
+    const startY = mode === 'top' ? 8 : this.canvasHeight - th;
     this.getOrCreateTracks(tracks, maxTracks, mode, startY);
 
     const duration = item.duration || 3;
 
     for (const track of tracks) {
-      track.y = mode === 'top'
-        ? track.id * th
-        : this.canvasHeight - maxTracks * th + track.id * th;
+      // Top: y grows downward from startY. Bottom: y grows upward from startY.
+      track.y = mode === 'top' ? startY + track.id * th : startY - track.id * th;
       if (track.occupiedUntil <= item.time + buffer) {
         track.occupiedUntil = item.time + duration;
         return { danmakuId: item.id, trackId: track.id, y: track.y, textWidth };
@@ -134,9 +136,7 @@ export class TrackManager {
       a.occupiedUntil < b.occupiedUntil ? a : b,
     );
     earliest.occupiedUntil = Math.max(earliest.occupiedUntil, item.time) + duration;
-    earliest.y = mode === 'top'
-      ? earliest.id * th
-      : this.canvasHeight - maxTracks * th + earliest.id * th;
+    earliest.y = mode === 'top' ? startY + earliest.id * th : startY - earliest.id * th;
     return { danmakuId: item.id, trackId: earliest.id, y: earliest.y, textWidth };
   }
 

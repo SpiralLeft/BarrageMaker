@@ -6,6 +6,8 @@ export interface EngineConfig {
   height: number;
   scrollSpeed: number;
   fontSize: number;
+  fontWeight: number;
+  strokeWidth: number;
   fontFamily: string;
   trackPadding: number;
 }
@@ -37,7 +39,7 @@ export class DanmakuEngine {
   }
 
   private measureText(ctx: CanvasRenderingContext2D, text: string): number {
-    ctx.font = `bold ${this.config.fontSize}px ${this.config.fontFamily}`;
+    ctx.font = `${this.config.fontWeight} ${this.config.fontSize}px ${this.config.fontFamily}`;
     return ctx.measureText(text).width;
   }
 
@@ -102,35 +104,40 @@ export class DanmakuEngine {
     return visible;
   }
 
-  render(ctx: CanvasRenderingContext2D, currentTime: number) {
+  render(ctx: CanvasRenderingContext2D, currentTime: number, opts?: { shadow?: boolean }) {
+    const shadow = opts?.shadow ?? true;
     const visible = this.getVisibleDanmaku(currentTime);
 
     for (const rd of visible) {
       const { item, x, y, opacity } = rd;
       ctx.globalAlpha = Math.max(0, Math.min(1, opacity));
 
-      ctx.font = `bold ${this.config.fontSize}px ${this.config.fontFamily}`;
+      ctx.font = `${this.config.fontWeight} ${this.config.fontSize}px ${this.config.fontFamily}`;
       ctx.textBaseline = 'top';
-
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 3;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
-
       ctx.fillStyle = item.color;
 
-      if (item.mode === 'scroll') {
-        ctx.textAlign = 'left';
-        ctx.fillText(item.text, x, y);
-      } else {
-        ctx.textAlign = 'center';
-        ctx.fillText(item.text, x, y);
+      const align = item.mode === 'scroll' ? 'left' : 'center';
+      ctx.textAlign = align;
+
+      if (shadow) {
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 3;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
       }
 
+      ctx.fillText(item.text, x, y);
+
+      // Thin black stroke for outline
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+      ctx.lineWidth = Math.max(1, this.config.fontSize * this.config.strokeWidth);
+      ctx.lineJoin = 'round';
+      ctx.strokeText(item.text, x, y);
     }
 
     ctx.globalAlpha = 1;

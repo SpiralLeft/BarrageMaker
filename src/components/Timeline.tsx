@@ -8,27 +8,31 @@ const MODE_COLORS: Record<string, string> = {
   bottom: '#81c784',
 };
 
-/** Greedy lane assignment: each danmaku gets the first lane where it doesn't overlap */
+/**
+ * Greedy lane assignment for timeline markers.
+ * Each marker's visual "width" is estimated from its text length.
+ * At the timeline's base font size (~10px), one CJK char ≈ 10px,
+ * one ASCII char ≈ 6px. We convert pixel width to time-fraction:
+ *   timeFrac = pixelWidth / (containerPx * zoom)
+ * At default zoom=1 with ~800px container showing maxTime seconds:
+ *   1 char ≈ 10px → ~ (10 / 800) * maxTime seconds → ~0.0125 * maxTime fraction.
+ * We use 0.01 per char as a safe estimate that works at typical zoom levels.
+ */
 function computeLanes(danmakus: DanmakuItem[], maxTime: number): Map<string, number> {
   const sorted = [...danmakus].sort((a, b) => a.time - b.time);
-  // Each lane stores the latest end-time (as fraction of maxTime) currently occupying it
   const laneEnds: number[] = [];
   const laneMap = new Map<string, number>();
 
-  // Minimum visual width of a danmaku marker as fraction of maxTime
-  const minWidth = 0.003; // ~0.2s on a 60s timeline
+  // Minimum gap between markers as fraction of maxTime (~0.5s at maxTime=60)
+  const minGap = 0.5 / maxTime;
 
   for (const dm of sorted) {
     const start = dm.time / maxTime;
-    // Duration as fraction of maxTime: at least minWidth
-    const durFrac = Math.max(
-      minWidth,
-      (dm.mode === 'scroll' ? 0.12 : (dm.duration || 3) / maxTime),
-    );
+    // Visual width ≈ text length * character fraction + padding
+    const durFrac = Math.max(minGap, dm.text.length * 0.01 + 0.005);
     const end = start + durFrac;
 
     let lane = 0;
-    // Find first lane that's free at this danmaku's start time
     while (lane < laneEnds.length && laneEnds[lane] > start) {
       lane++;
     }
@@ -149,14 +153,16 @@ export default function Timeline() {
       <div
         ref={containerRef}
         className="timeline"
-        style={{ height: totalLanes > 1 ? Math.max(80, totalLanes * (laneHeight + 2) + 12) : 80 }}
         onMouseDown={handleMouseDown}
         onWheel={handleWheel}
       >
         <div
           ref={contentRef}
           className="timeline-content"
-          style={{ width: `${zoom * 100}%` }}
+          style={{
+            width: `${zoom * 100}%`,
+            minHeight: `${Math.max(80, totalLanes * (laneHeight + 2) + 12)}px`,
+          }}
         >
           {danmakus.map((dm) => {
             const lane = lanes.get(dm.id) ?? 0;

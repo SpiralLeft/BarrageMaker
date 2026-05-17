@@ -12,6 +12,8 @@ export default function DanmakuCanvas() {
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
   const fontSize = useStore((s) => s.fontSize);
+  const fontWeight = useStore((s) => s.fontWeight);
+  const strokeWidth = useStore((s) => s.strokeWidth);
   const mediaSrc = useStore((s) => s.mediaSrc);
 
   // Keep a ref to currentTime so the rAF loop doesn't need to be recreated
@@ -25,13 +27,15 @@ export default function DanmakuCanvas() {
         height,
         scrollSpeed: 350,
         fontSize,
+        fontWeight,
+        strokeWidth,
         fontFamily: '"Microsoft YaHei", "PingFang SC", sans-serif',
         trackPadding: 4,
       });
     } else {
-      engineRef.current.updateConfig({ width, height, fontSize });
+      engineRef.current.updateConfig({ width, height, fontSize, fontWeight, strokeWidth });
     }
-  }, [width, height, fontSize]);
+  }, [width, height, fontSize, fontWeight, strokeWidth]);
 
   // Recompute track assignments when danmaku list or font size changes
   useEffect(() => {
@@ -44,7 +48,7 @@ export default function DanmakuCanvas() {
     if (ctx) {
       engine.recomputeAssignments(danmakus, ctx);
     }
-  }, [danmakus, width, height, fontSize]);
+  }, [danmakus, width, height, fontSize, fontWeight]);
 
   // Continuous rAF render loop (reads latest time from ref)
   useEffect(() => {
