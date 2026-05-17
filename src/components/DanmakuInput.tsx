@@ -15,12 +15,16 @@ export default function DanmakuInput() {
   const inputMode = useStore((s) => s.inputMode);
   const inputColor = useStore((s) => s.inputColor);
   const fontSize = useStore((s) => s.fontSize);
+  const fontWeight = useStore((s) => s.fontWeight);
+  const strokeWidth = useStore((s) => s.strokeWidth);
   const currentTime = useStore((s) => s.currentTime);
   const addDanmaku = useStore((s) => s.addDanmaku);
   const setInputText = useStore((s) => s.setInputText);
   const setInputMode = useStore((s) => s.setInputMode);
   const setInputColor = useStore((s) => s.setInputColor);
   const setFontSize = useStore((s) => s.setFontSize);
+  const setFontWeight = useStore((s) => s.setFontWeight);
+  const setStrokeWidth = useStore((s) => s.setStrokeWidth);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -94,6 +98,28 @@ export default function DanmakuInput() {
             <option value="48">48</option>
             <option value="56">56</option>
             <option value="64">64</option>
+          </select>
+        </div>
+        <div className="option-group">
+          <label>字重</label>
+          <select value={fontWeight} onChange={(e) => setFontWeight(Number(e.target.value))}>
+            <option value="300">Light</option>
+            <option value="400">Normal</option>
+            <option value="500">Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700">Bold</option>
+            <option value="800">Extrabold</option>
+            <option value="900">Black</option>
+          </select>
+        </div>
+        <div className="option-group">
+          <label>描边</label>
+          <select value={strokeWidth} onChange={(e) => setStrokeWidth(Number(e.target.value))}>
+            <option value="0">无</option>
+            <option value="0.03">细</option>
+            <option value="0.06">标准</option>
+            <option value="0.10">粗</option>
+            <option value="0.15">特粗</option>
           </select>
         </div>
       </div>

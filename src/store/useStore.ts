@@ -15,6 +15,8 @@ interface AppState {
   height: number;
   fps: number;
   fontSize: number;
+  fontWeight: number;
+  strokeWidth: number;
   bgColor: string;
 
   danmakus: DanmakuItem[];
@@ -35,6 +37,8 @@ interface AppState {
   setHeight: (h: number) => void;
   setFps: (fps: number) => void;
   setFontSize: (size: number) => void;
+  setFontWeight: (weight: number) => void;
+  setStrokeWidth: (ratio: number) => void;
   setBgColor: (color: string) => void;
 
   addDanmaku: (item: DanmakuItem) => void;
@@ -67,6 +71,8 @@ export const useStore = create<AppState>((set, get) => ({
   height: 1080,
   fps: 60,
   fontSize: 36,
+  fontWeight: 700,
+  strokeWidth: 0.06,
   bgColor: '#000000',
   danmakus: [],
   selectedDanmakuId: null,
@@ -85,6 +91,8 @@ export const useStore = create<AppState>((set, get) => ({
   setHeight: (h) => set({ height: h }),
   setFps: (fps) => set({ fps }),
   setFontSize: (size) => set({ fontSize: size }),
+  setFontWeight: (weight) => set({ fontWeight: weight }),
+  setStrokeWidth: (ratio) => set({ strokeWidth: ratio }),
   setBgColor: (color) => set({ bgColor: color }),
 
   addDanmaku: (item) =>
@@ -120,6 +128,8 @@ export const useStore = create<AppState>((set, get) => ({
       height: s.height,
       fps: s.fps,
       fontSize: s.fontSize,
+      fontWeight: s.fontWeight,
+      strokeWidth: s.strokeWidth,
       bgColor: s.bgColor,
       danmakus: s.danmakus,
     };
@@ -133,6 +143,8 @@ export const useStore = create<AppState>((set, get) => ({
       height: data.height,
       fps: data.fps,
       fontSize: data.fontSize ?? 36,
+      fontWeight: data.fontWeight ?? 700,
+      strokeWidth: data.strokeWidth ?? 0.06,
       bgColor: data.bgColor,
       danmakus: data.danmakus,
     }),

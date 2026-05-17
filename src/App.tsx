@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useStore } from './store/useStore';
+import { useEffect, useRef } from 'react';
+import { useStore, createDanmaku } from './store/useStore';
 import Toolbar from './components/Toolbar';
 import MediaPlayer from './components/MediaPlayer';
 import DanmakuCanvas from './components/DanmakuCanvas';
@@ -7,6 +7,7 @@ import DanmakuInput from './components/DanmakuInput';
 import Timeline from './components/Timeline';
 import DanmakuEditor from './components/DanmakuEditor';
 import ExportPanel from './components/ExportPanel';
+import type { DanmakuItem } from './types/danmaku';
 import './App.css';
 
 export default function App() {
@@ -20,11 +21,18 @@ export default function App() {
   const setCurrentTime = useStore((s) => s.setCurrentTime);
   const selectedDanmakuId = useStore((s) => s.selectedDanmakuId);
   const deleteDanmaku = useStore((s) => s.deleteDanmaku);
+  const danmakus = useStore((s) => s.danmakus);
+  const addDanmaku = useStore((s) => s.addDanmaku);
 
   const aspectRatio = width / height;
 
+  // Clipboard for copy/paste danmaku
+  const clipboardRef = useRef<Pick<DanmakuItem, 'text' | 'mode' | 'color' | 'duration' | 'time'> | null>(null);
+
   // Global keyboard shortcuts
   useEffect(() => {
+    const getSelected = () => danmakus.find((d) => d.id === selectedDanmakuId);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -36,19 +44,47 @@ export default function App() {
           setCurrentTime(0);
         }
         setIsPlaying(!isPlaying);
+        return;
       }
 
       if (e.key === 'Delete' && selectedDanmakuId) {
         e.preventDefault();
         deleteDanmaku(selectedDanmakuId);
+        return;
+      }
+
+      // Ctrl+C: copy selected danmaku
+      if (e.key === 'c' && (e.ctrlKey || e.metaKey) && selectedDanmakuId) {
+        e.preventDefault();
+        const dm = getSelected();
+        if (dm) {
+          clipboardRef.current = {
+            text: dm.text,
+            mode: dm.mode,
+            color: dm.color,
+            duration: dm.duration,
+            time: dm.time,
+          };
+        }
+        return;
+      }
+
+      // Ctrl+V: paste danmaku at same time
+      if (e.key === 'v' && (e.ctrlKey || e.metaKey) && clipboardRef.current) {
+        e.preventDefault();
+        const clip = clipboardRef.current;
+        const dm = createDanmaku(clip.time, clip.text, clip.mode, clip.color);
+        if (clip.duration) dm.duration = clip.duration;
+        addDanmaku(dm);
+        return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
-    mediaSrc, isPlaying, currentTime, duration,
-    setIsPlaying, setCurrentTime, selectedDanmakuId, deleteDanmaku,
+    mediaSrc, isPlaying, currentTime, duration, setIsPlaying, setCurrentTime,
+    selectedDanmakuId, deleteDanmaku, danmakus, addDanmaku,
   ]);
 
   return (
