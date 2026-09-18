@@ -1,8 +1,32 @@
 {
   "name": "barrage-maker",
   "version": "1.0.0",
+  "description": "纯前端弹幕打轴与渲染工具 —— 导入视频/音频，在时间轴上打轴，导出带透明通道的 WebM 或 PNG 序列",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "SpiralLeft",
+  "keywords": [
+    "danmaku",
+    "barrage",
+    "弹幕",
+    "canvas",
+    "video",
+    "video-editing",
+    "react",
+    "vite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SpiralLeft/BarrageMaker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SpiralLeft/BarrageMaker/issues"
+  },
+  "homepage": "https://github.com/SpiralLeft/BarrageMaker#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

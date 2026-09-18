@@ -1,0 +1,17 @@
+# 行尾统一由 Git 处理：仓库内一律存储 LF，检出时按平台自动转换
+* text=auto
+
+# 二进制文件不做行尾转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webm binary
+*.mp4  binary
+*.mp3  binary
+*.woff binary
+*.woff2 binary
+
+# 锁文件不参与 diff 与语言统计
+package-lock.json -diff linguist-generated
